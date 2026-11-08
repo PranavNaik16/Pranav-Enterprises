@@ -1,0 +1,103 @@
+@model UpdateEmployeeDto
+@{
+    ViewData["Title"] = "Edit Employee";
+}
+
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-2">
+            <i class="bi bi-arrow-left me-1"></i> Back to Workforce
+        </a>
+        <h1 class="page-title">Edit Employee</h1>
+        <p class="page-subtitle">Update workforce profile and organizational assignment</p>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-modern p-4">
+            <form asp-action="Edit" method="post" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small" role="alert"></div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label asp-for="EmployeeCode" class="form-label fw-semibold small text-secondary">Employee Code</label>
+                        <input asp-for="EmployeeCode" class="form-control" />
+                        <span asp-validation-for="EmployeeCode" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="DepartmentId" class="form-label fw-semibold small text-secondary">Department</label>
+                        <select asp-for="DepartmentId" class="form-select" asp-items="ViewBag.Departments"></select>
+                        <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label asp-for="FirstName" class="form-label fw-semibold small text-secondary">First Name</label>
+                        <input asp-for="FirstName" class="form-control" />
+                        <span asp-validation-for="FirstName" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="LastName" class="form-label fw-semibold small text-secondary">Last Name</label>
+                        <input asp-for="LastName" class="form-control" />
+                        <span asp-validation-for="LastName" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label asp-for="Email" class="form-label fw-semibold small text-secondary">Corporate Email</label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="Phone" class="form-label fw-semibold small text-secondary">Contact Number</label>
+                        <input asp-for="Phone" class="form-control" />
+                        <span asp-validation-for="Phone" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label asp-for="Position" class="form-label fw-semibold small text-secondary">Position</label>
+                        <input asp-for="Position" class="form-control" />
+                        <span asp-validation-for="Position" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="Salary" class="form-label fw-semibold small text-secondary">Annual Salary ($)</label>
+                        <input asp-for="Salary" type="number" class="form-control" />
+                        <span asp-validation-for="Salary" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <label asp-for="HireDate" class="form-label fw-semibold small text-secondary">Hire Date</label>
+                        <input asp-for="HireDate" type="date" class="form-control" />
+                        <span asp-validation-for="HireDate" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="Status" class="form-label fw-semibold small text-secondary">Status</label>
+                        <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<EmployeeStatus>()"></select>
+                        <span asp-validation-for="Status" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light">Cancel</a>
+                    <button type="submit" class="btn btn-primary fw-semibold">
+                        <i class="bi bi-check2-circle me-1"></i> Update Employee
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

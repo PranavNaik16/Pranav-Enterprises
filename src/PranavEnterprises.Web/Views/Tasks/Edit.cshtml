@@ -1,0 +1,95 @@
+@model UpdateTaskDto
+@{
+    ViewData["Title"] = "Edit Task";
+}
+
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-2">
+            <i class="bi bi-arrow-left me-1"></i> Back to Tasks
+        </a>
+        <h1 class="page-title">Edit Task</h1>
+        <p class="page-subtitle">Update task scope, assignees, logged hours, and workflow status</p>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-modern p-4">
+            <form asp-action="Edit" method="post" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small" role="alert"></div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label asp-for="TaskCode" class="form-label fw-semibold small text-secondary">Task Code</label>
+                        <input asp-for="TaskCode" class="form-control" />
+                        <span asp-validation-for="TaskCode" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="ProjectId" class="form-label fw-semibold small text-secondary">Strategic Project</label>
+                        <select asp-for="ProjectId" class="form-select" asp-items="ViewBag.Projects"></select>
+                        <span asp-validation-for="ProjectId" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label fw-semibold small text-secondary">Task Title</label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label fw-semibold small text-secondary">Description</label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label asp-for="AssignedEmployeeId" class="form-label fw-semibold small text-secondary">Assignee Employee</label>
+                        <select asp-for="AssignedEmployeeId" class="form-select" asp-items="ViewBag.Employees">
+                            <option value="">-- Unassigned --</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-3">
+                        <label asp-for="EstimatedHours" class="form-label fw-semibold small text-secondary">Est. Hours</label>
+                        <input asp-for="EstimatedHours" type="number" class="form-control" />
+                    </div>
+                    <div class="col-sm-3">
+                        <label asp-for="LoggedHours" class="form-label fw-semibold small text-secondary">Logged Hours</label>
+                        <input asp-for="LoggedHours" type="number" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-4">
+                        <label asp-for="DueDate" class="form-label fw-semibold small text-secondary">Due Date</label>
+                        <input asp-for="DueDate" type="date" class="form-control" />
+                    </div>
+                    <div class="col-sm-4">
+                        <label asp-for="Priority" class="form-label fw-semibold small text-secondary">Priority</label>
+                        <select asp-for="Priority" class="form-select" asp-items="Html.GetEnumSelectList<PriorityLevel>()"></select>
+                    </div>
+                    <div class="col-sm-4">
+                        <label asp-for="Status" class="form-label fw-semibold small text-secondary">Status</label>
+                        <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<TaskItemStatus>()"></select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light">Cancel</a>
+                    <button type="submit" class="btn btn-primary fw-semibold">
+                        <i class="bi bi-check2-circle me-1"></i> Update Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

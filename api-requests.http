@@ -1,0 +1,113 @@
+### ========================================================
+### PRANAV ENTERPRISE REST API TEST SUITE
+### Base URL: http://localhost:5000
+### ========================================================
+
+@baseUrl = http://localhost:5000
+
+### 1. Authenticate as Super Admin (Pranav Naik)
+# @name loginAdmin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "superadmin@pranav.com",
+  "password": "P@ssword123!",
+  "rememberMe": true
+}
+
+### Store Auth Token from login response
+@authToken = {{loginAdmin.response.body.token}}
+
+### 2. Register New User (Awaits approval by pranavnaik355@gmail.com)
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Neha",
+  "lastName": "Verma",
+  "email": "neha.verma@pranav.com",
+  "jobTitle": "Product Designer",
+  "departmentName": "Product Management",
+  "role": "Manager",
+  "password": "P@ssword123!",
+  "confirmPassword": "P@ssword123!"
+}
+
+### 3. Get Executive Dashboard KPI Summary
+GET {{baseUrl}}/api/dashboard/summary
+Authorization: Bearer {{authToken}}
+
+### 4. Get All Employees Directory
+GET {{baseUrl}}/api/employees
+Authorization: Bearer {{authToken}}
+
+### 5. Search Employees by Name or Position
+GET {{baseUrl}}/api/employees?search=developer
+Authorization: Bearer {{authToken}}
+
+### 6. Filter Employees by Department (1 = Software Engineering)
+GET {{baseUrl}}/api/employees?departmentId=1
+Authorization: Bearer {{authToken}}
+
+### 7. Get Employee by ID
+GET {{baseUrl}}/api/employees/1
+Authorization: Bearer {{authToken}}
+
+### 8. Create New Employee (SuperAdmin / Admin)
+POST {{baseUrl}}/api/employees
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "employeeCode": "EMP-3001",
+  "firstName": "Vikram",
+  "lastName": "Naik",
+  "email": "vikram.naik@pranav.com",
+  "phone": "+91 99000 88776",
+  "position": "DevOps Lead",
+  "salary": 140000,
+  "hireDate": "2026-02-01T00:00:00Z",
+  "status": 1,
+  "departmentId": 3
+}
+
+### 9. Get All Strategic Projects
+GET {{baseUrl}}/api/projects
+Authorization: Bearer {{authToken}}
+
+### 10. Get Project Details with Milestones & Tasks
+GET {{baseUrl}}/api/projects/1
+Authorization: Bearer {{authToken}}
+
+### 11. Create New Strategic Project (SuperAdmin / Admin / Manager)
+POST {{baseUrl}}/api/projects
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "projectCode": "PRJ-SEC-01",
+  "name": "Zero Trust Security Gateway",
+  "description": "Enterprise micro-segmentation and multi-factor hardware security layer.",
+  "clientName": "Global Defense Systems",
+  "budget": 350000,
+  "startDate": "2026-04-01T00:00:00Z",
+  "endDate": "2026-12-31T00:00:00Z",
+  "status": 1,
+  "managerId": 1
+}
+
+### 12. Get All Tasks
+GET {{baseUrl}}/api/tasks
+Authorization: Bearer {{authToken}}
+
+### 13. Filter Tasks by Status (0 = ToDo, 1 = InProgress, 2 = InReview, 3 = Done)
+GET {{baseUrl}}/api/tasks?status=1
+Authorization: Bearer {{authToken}}
+
+### 14. Quick Status Transition for a Task
+PATCH {{baseUrl}}/api/tasks/1/status
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+3

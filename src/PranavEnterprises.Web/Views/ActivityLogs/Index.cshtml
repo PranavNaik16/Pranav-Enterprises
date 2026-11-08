@@ -1,0 +1,77 @@
+@model List<ActivityLogDto>
+@{
+    ViewData["Title"] = "System Audit Trail";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Activity Logs & Audit Trail</h1>
+        <p class="page-subtitle">Security event monitoring, data modifications, authentication history, and administrative actions</p>
+    </div>
+</div>
+
+<div class="card-modern">
+    <div class="card-header-modern">
+        <h5 class="card-title-modern"><i class="bi bi-clock-history me-2 text-primary"></i> Historical Audit Logs</h5>
+        <span class="badge bg-light text-dark border">@Model.Count Events Recorded</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table-modern">
+            <thead>
+                <tr>
+                    <th>Timestamp (UTC)</th>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Action</th>
+                    <th>Module</th>
+                    <th>Details</th>
+                    <th>Client IP</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var log in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="text-dark small fw-semibold">@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-dark small">@log.UserName</span>
+                            </td>
+                            <td>
+                                <span class="badge @(log.UserRole == AppRoles.SuperAdmin ? "bg-danger" : log.UserRole == AppRoles.Admin ? "bg-primary" : log.UserRole == AppRoles.Manager ? "bg-info text-dark" : "bg-secondary")" style="font-size: 0.65rem;">
+                                    @log.UserRole
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge @(log.Action == "Create" ? "bg-success" : log.Action == "Update" ? "bg-warning text-dark" : log.Action == "Delete" ? "bg-danger" : log.Action == "Login" ? "bg-primary" : "bg-info text-dark")">
+                                    @log.Action
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">@log.Module</span>
+                            </td>
+                            <td style="max-width: 320px;">
+                                <span class="text-secondary small">@log.Details</span>
+                            </td>
+                            <td>
+                                <span class="text-muted small font-monospace">@(log.IpAddress ?? "Localhost")</span>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-shield-check fs-1 text-secondary d-block mb-2"></i>
+                            No activity logs found.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,137 @@
+@model List<RoleDto>
+@{
+    ViewData["Title"] = "Roles & Permissions Management";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Roles & Access Control (RBAC)</h1>
+        <p class="page-subtitle">Configure system security roles, permission boundaries, and member allocations</p>
+    </div>
+    <button type="button" class="btn btn-primary fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#createRoleModal">
+        <i class="bi bi-shield-plus me-1"></i> Add Custom Role
+    </button>
+</div>
+
+<!-- Roles Table -->
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="card-title-modern"><i class="bi bi-shield-lock me-2 text-primary"></i> Defined System & Custom Roles</h5>
+                <span class="badge bg-light text-dark border">@Model.Count Total Roles</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Role Name</th>
+                            <th>Description</th>
+                            <th>Active Members</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var role in Model)
+                        {
+                            var isCore = AppRoles.All.Contains(role.Name);
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-shield-fill-check me-2 @(role.Name == AppRoles.SuperAdmin ? "text-danger" : role.Name == AppRoles.Admin ? "text-primary" : "text-info")"></i>
+                                        <div>
+                                            <span class="fw-bold text-dark">@role.Name</span>
+                                            @if (isCore)
+                                            {
+                                                <span class="badge bg-light text-secondary border ms-1" style="font-size: 0.65rem;">System Core</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-secondary small">@(role.Description ?? "Standard organizational access role")</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-primary border">@role.UsersCount user(s)</span>
+                                </td>
+                                <td class="text-end">
+                                    @if (!isCore)
+                                    {
+                                        <form asp-action="Delete" asp-route-id="@role.Id" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete role @role.Name?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Role">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-muted small border">Protected</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- RBAC Explanation Matrix Card -->
+    <div class="col-lg-4">
+        <div class="card-modern p-4">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle me-1 text-primary"></i> RBAC Security Matrix</h5>
+            <div class="small text-secondary mb-3">
+                Security roles enforce strict authorization policies across all Web views and RESTful API endpoints:
+            </div>
+
+            <div class="list-group list-group-flush small">
+                <div class="list-group-item px-0 py-2 border-0 border-bottom">
+                    <span class="badge bg-danger mb-1">Super Admin</span>
+                    <div class="text-dark">Full access: user management, role creation, system settings, activity logs, full CRUD.</div>
+                </div>
+                <div class="list-group-item px-0 py-2 border-0 border-bottom">
+                    <span class="badge bg-primary mb-1">Admin</span>
+                    <div class="text-dark">User administration, employee CRUD, project CRUD, task assignments, view audit logs.</div>
+                </div>
+                <div class="list-group-item px-0 py-2 border-0 border-bottom">
+                    <span class="badge bg-info text-dark mb-1">Manager</span>
+                    <div class="text-dark">Project creation & updates, task creation & delegation, workforce review.</div>
+                </div>
+                <div class="list-group-item px-0 py-2 border-0">
+                    <span class="badge bg-secondary mb-1">Employee</span>
+                    <div class="text-dark">View assigned projects, manage assigned tasks, update personal profile.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Role Modal -->
+<div class="modal fade" id="createRoleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Create Custom Role</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Role Name</label>
+                        <input name="Name" class="form-control" required placeholder="e.g. Lead Auditor" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Role Description</label>
+                        <textarea name="Description" class="form-control" rows="3" placeholder="Describe access responsibilities..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-semibold">Create Role</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

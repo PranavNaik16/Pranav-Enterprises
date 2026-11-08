@@ -1,0 +1,108 @@
+@model RegisterDto
+@{
+    ViewData["Title"] = "Create Account";
+    Layout = "_Layout";
+}
+
+<div class="min-vh-100 d-flex align-items-center justify-content-center py-5" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-9 col-lg-8 col-xl-6">
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                    <div class="card-header bg-primary text-white text-center py-4 border-0">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-white text-primary rounded-circle shadow-sm mb-2" style="width: 50px; height: 50px;">
+                            <i class="bi bi-person-plus-fill fs-3"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1">Pranav Enterprises</h4>
+                        <p class="mb-0 text-white-50 small">Register User Account</p>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h5 class="fw-bold text-dark mb-0">Create New Account</h5>
+                            <span class="badge bg-warning text-dark"><i class="bi bi-shield-lock me-1"></i>Approval Required</span>
+                        </div>
+                        <div class="alert alert-info py-2 px-3 small mb-3 border-0">
+                            <i class="bi bi-info-circle me-1"></i> New registrations are sent to <strong>pranavnaik355@gmail.com</strong> for role verification and activation before sign in.
+                        </div>
+
+                        <form asp-action="Register" method="post" novalidate>
+                            @Html.AntiForgeryToken()
+
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small" role="alert"></div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-sm-6">
+                                    <label asp-for="FirstName" class="form-label fw-semibold small text-secondary">First Name</label>
+                                    <input asp-for="FirstName" class="form-control" placeholder="John" />
+                                    <span asp-validation-for="FirstName" class="text-danger small"></span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label asp-for="LastName" class="form-label fw-semibold small text-secondary">Last Name</label>
+                                    <input asp-for="LastName" class="form-control" placeholder="Doe" />
+                                    <span asp-validation-for="LastName" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label fw-semibold small text-secondary">Corporate Email Address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
+                                    <input asp-for="Email" class="form-control" placeholder="john.doe@pranav.com" />
+                                </div>
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-sm-6">
+                                    <label asp-for="JobTitle" class="form-label fw-semibold small text-secondary">Job Title</label>
+                                    <input asp-for="JobTitle" class="form-control" placeholder="Software Engineer" />
+                                </div>
+                                <div class="col-sm-6">
+                                    <label asp-for="DepartmentName" class="form-label fw-semibold small text-secondary">Department</label>
+                                    <input asp-for="DepartmentName" class="form-control" placeholder="Engineering" />
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Role" class="form-label fw-semibold small text-secondary">Requested Access Role</label>
+                                <select asp-for="Role" class="form-select">
+                                    <option value="Employee">Employee (Default)</option>
+                                    <option value="Manager">Manager</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                                <span asp-validation-for="Role" class="text-danger small"></span>
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-sm-6">
+                                    <label asp-for="Password" class="form-label fw-semibold small text-secondary">Password</label>
+                                    <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" />
+                                    <span asp-validation-for="Password" class="text-danger small"></span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label asp-for="ConfirmPassword" class="form-label fw-semibold small text-secondary">Confirm Password</label>
+                                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="••••••••" />
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
+                                <i class="bi bi-person-check-fill me-1"></i> Complete Registration
+                            </button>
+                        </form>
+
+                        <div class="text-center mt-4 pt-2">
+                            <span class="text-muted small">Already registered? </span>
+                            <a asp-action="Login" class="small fw-semibold text-primary text-decoration-none">Sign In Here</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

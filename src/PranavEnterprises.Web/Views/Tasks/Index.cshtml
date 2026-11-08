@@ -1,0 +1,174 @@
+@model List<ProjectTaskDto>
+@{
+    ViewData["Title"] = "Task Management";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Tasks Management</h1>
+        <p class="page-subtitle">Action items, operational deliverables, time estimation, and workflow status</p>
+    </div>
+    @if (User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Manager))
+    {
+        <a asp-action="Create" class="btn btn-primary fw-semibold shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> New Task
+        </a>
+    }
+</div>
+
+<!-- Search & Filter Card -->
+<div class="card-modern p-3 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <select name="projectId" class="form-select" asp-items="ViewBag.Projects">
+                <option value="">-- All Projects --</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select name="employeeId" class="form-select" asp-items="ViewBag.Employees">
+                <option value="">-- All Assignees --</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="status" class="form-select" asp-items="Html.GetEnumSelectList<TaskItemStatus>()">
+                <option value="">-- All Statuses --</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-outline-primary w-100 fw-semibold">
+                <i class="bi bi-funnel me-1"></i> Filter
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+        </div>
+    </form>
+</div>
+
+<!-- Tasks Table -->
+<div class="card-modern">
+    <div class="table-responsive">
+        <table class="table-modern">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Code</th>
+                    <th>Project</th>
+                    <th>Assignee</th>
+                    <th>Priority</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var task in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">@task.Title</div>
+                                <div class="text-muted small">
+                                    <i class="bi bi-clock me-1"></i> Est: @task.EstimatedHours h | Logged: @task.LoggedHours h
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-primary border">@task.TaskCode</span>
+                            </td>
+                            <td>
+                                <span class="fw-semibold text-secondary small">@task.ProjectName</span>
+                            </td>
+                            <td>
+                                <span class="text-dark small">@(task.AssignedEmployeeName ?? "Unassigned")</span>
+                            </td>
+                            <td>
+                                @if (task.Priority == PriorityLevel.Critical)
+                                {
+                                    <span class="badge bg-danger">Critical</span>
+                                }
+                                else if (task.Priority == PriorityLevel.High)
+                                {
+                                    <span class="badge bg-warning text-dark">High</span>
+                                }
+                                else if (task.Priority == PriorityLevel.Medium)
+                                {
+                                    <span class="badge bg-info text-dark">Medium</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Low</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="text-muted small">@task.DueDate.ToString("MMM dd, yyyy")</span>
+                            </td>
+                            <td>
+                                <form asp-action="UpdateStatus" asp-route-id="@task.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <select name="status" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()" style="font-size: 0.75rem;">
+                                        <option value="1" selected="@(task.Status == TaskItemStatus.Todo)">Todo</option>
+                                        <option value="2" selected="@(task.Status == TaskItemStatus.InProgress)">In Progress</option>
+                                        <option value="3" selected="@(task.Status == TaskItemStatus.InReview)">In Review</option>
+                                        <option value="4" selected="@(task.Status == TaskItemStatus.Completed)">Completed</option>
+                                    </select>
+                                </form>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@task.Id" class="btn btn-outline-secondary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    @if (User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Manager))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@task.Id" class="btn btn-outline-primary" title="Edit Task">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    }
+                                    @if (User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.Admin))
+                                    {
+                                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTaskModal-@task.Id" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
+                                </div>
+
+                                <!-- Delete Task Modal -->
+                                @if (User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.Admin))
+                                {
+                                    <div class="modal fade text-start" id="deleteTaskModal-@task.Id" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header border-0 pb-0">
+                                                    <h5 class="modal-title fw-bold text-danger">Delete Task</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body py-3">
+                                                    Are you sure you want to remove task <strong>@task.Title</strong> (@task.TaskCode)?
+                                                </div>
+                                                <div class="modal-footer border-0 pt-0">
+                                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                                    <form asp-action="Delete" asp-route-id="@task.Id" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-check2-square fs-1 text-secondary d-block mb-2"></i>
+                            No tasks found matching your filter criteria.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

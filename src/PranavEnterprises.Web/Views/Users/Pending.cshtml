@@ -1,0 +1,110 @@
+@model List<UserDto>
+@{
+    ViewData["Title"] = "Pending Role Approvals";
+    var roles = ViewBag.Roles as List<RoleDto> ?? new List<RoleDto>();
+}
+
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-2">
+            <i class="bi bi-arrow-left me-1"></i> Back to User Directory
+        </a>
+        <h1 class="page-title">Pending Role Approvals</h1>
+        <p class="page-subtitle">Security approval gate for newly registered corporate user accounts</p>
+    </div>
+</div>
+
+<div class="alert alert-primary d-flex align-items-center mb-4 shadow-sm" role="alert">
+    <i class="bi bi-shield-check fs-4 me-3"></i>
+    <div>
+        <strong>Super Admin Approval Workflow:</strong>
+        When new users self-register, an email dispatch is transmitted to <strong>pranavnaik355@gmail.com</strong>.
+        Accounts remain inactive until you review the candidate and confirm their authorized security role.
+    </div>
+</div>
+
+<div class="card-modern">
+    <div class="card-header-modern">
+        <h5 class="card-title-modern">
+            <i class="bi bi-person-exclamation me-2 text-warning"></i> Registration Requests Awaiting Verification
+        </h5>
+        <span class="badge bg-warning text-dark border">@Model.Count Pending</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table-modern">
+            <thead>
+                <tr>
+                    <th>Candidate</th>
+                    <th>Job Title & Dept</th>
+                    <th>Requested Role</th>
+                    <th>Registered At</th>
+                    <th>Approve With Role</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-2" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                                        @(user.FullName.Length > 0 ? user.FullName[0].ToString().ToUpper() : "U")
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">@user.FullName</div>
+                                        <div class="text-muted small">@user.Email</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-dark small fw-semibold">@(user.JobTitle ?? "Staff")</div>
+                                <div class="text-muted small">@(user.DepartmentName ?? "General")</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-info text-dark">@user.RequestedRole</span>
+                            </td>
+                            <td>
+                                <span class="text-muted small">@user.CreatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                            </td>
+                            <td>
+                                <form asp-action="ApproveRole" asp-route-id="@user.Id" method="post" class="d-flex align-items-center gap-2">
+                                    @Html.AntiForgeryToken()
+                                    <select name="approvedRole" class="form-select form-select-sm" style="min-width: 140px;">
+                                        @foreach (var r in roles)
+                                        {
+                                            <option value="@r.Name" selected="@(r.Name == user.RequestedRole)">@r.Name</option>
+                                        }
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-success fw-semibold">
+                                        <i class="bi bi-check-lg me-1"></i> Approve
+                                    </button>
+                                </form>
+                            </td>
+                            <td class="text-end">
+                                <form asp-action="Reject" asp-route-id="@user.Id" method="post" class="d-inline" onsubmit="return confirm('Reject and remove registration for @user.FullName?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Reject Registration">
+                                        <i class="bi bi-x-lg me-1"></i> Reject
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-check2-circle fs-1 text-success d-block mb-2"></i>
+                            No pending registrations! All user accounts have been reviewed and approved.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

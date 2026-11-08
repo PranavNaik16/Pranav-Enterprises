@@ -1,0 +1,80 @@
+@model CreateUserDto
+@{
+    ViewData["Title"] = "Create User";
+}
+
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-2">
+            <i class="bi bi-arrow-left me-1"></i> Back to Users
+        </a>
+        <h1 class="page-title">Provision User Account</h1>
+        <p class="page-subtitle">Create enterprise credentials and assign Role-Based Access Control permissions</p>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-modern p-4">
+            <form asp-action="Create" method="post" novalidate>
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small" role="alert"></div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label asp-for="FirstName" class="form-label fw-semibold small text-secondary">First Name</label>
+                        <input asp-for="FirstName" class="form-control" />
+                        <span asp-validation-for="FirstName" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="LastName" class="form-label fw-semibold small text-secondary">Last Name</label>
+                        <input asp-for="LastName" class="form-control" />
+                        <span asp-validation-for="LastName" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label fw-semibold small text-secondary">Corporate Email Address</label>
+                    <input asp-for="Email" class="form-control" placeholder="user@pranav.com" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label asp-for="JobTitle" class="form-label fw-semibold small text-secondary">Job Title</label>
+                        <input asp-for="JobTitle" class="form-control" placeholder="Operations Analyst" />
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="DepartmentName" class="form-label fw-semibold small text-secondary">Department</label>
+                        <input asp-for="DepartmentName" class="form-control" placeholder="Engineering" />
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <label asp-for="Role" class="form-label fw-semibold small text-secondary">Role Assignment (RBAC)</label>
+                        <select asp-for="Role" class="form-select" asp-items="ViewBag.Roles"></select>
+                        <span asp-validation-for="Role" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="Password" class="form-label fw-semibold small text-secondary">Initial Password</label>
+                        <input asp-for="Password" type="password" class="form-control" placeholder="Minimum 6 characters" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light">Cancel</a>
+                    <button type="submit" class="btn btn-primary fw-semibold">
+                        <i class="bi bi-person-check-fill me-1"></i> Provision Account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

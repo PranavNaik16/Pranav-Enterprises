@@ -1,0 +1,172 @@
+@model List<ProjectDto>
+@{
+    ViewData["Title"] = "Enterprise Projects";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Projects Portfolio</h1>
+        <p class="page-subtitle">Strategic initiatives, budget allocation, milestones, and deliverable progress</p>
+    </div>
+    @if (User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Manager))
+    {
+        <a asp-action="Create" class="btn btn-primary fw-semibold shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> New Project
+        </a>
+    }
+</div>
+
+<!-- Search & Filter Card -->
+<div class="card-modern p-3 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text bg-light text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" name="search" class="form-control" placeholder="Search by project name, code, or client..." value="@ViewBag.Search" />
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select" asp-items="Html.GetEnumSelectList<ProjectStatus>()">
+                <option value="">-- All Statuses --</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-outline-primary w-100 fw-semibold">
+                <i class="bi bi-funnel me-1"></i> Filter
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+        </div>
+    </form>
+</div>
+
+<!-- Projects Table -->
+<div class="card-modern">
+    <div class="table-responsive">
+        <table class="table-modern">
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>Code</th>
+                    <th>Client</th>
+                    <th>Budget</th>
+                    <th>Timeline</th>
+                    <th>Progress</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var prj in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">@prj.Name</div>
+                                <div class="text-muted small">
+                                    <i class="bi bi-person me-1"></i> Mgr: @(prj.ManagerName ?? "Unassigned")
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">@prj.ProjectCode</span>
+                            </td>
+                            <td>
+                                <span class="text-secondary small fw-semibold">@prj.ClientName</span>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-dark small">$@prj.Budget.ToString("N0")</span>
+                            </td>
+                            <td>
+                                <span class="text-muted small">@prj.StartDate.ToString("MMM dd") - @prj.EndDate.ToString("MMM dd, yyyy")</span>
+                            </td>
+                            <td style="min-width: 130px;">
+                                <div class="d-flex justify-content-between small text-muted mb-1">
+                                    <span>@prj.ProgressPercentage%</span>
+                                    <span>@prj.CompletedTasks/@prj.TotalTasks tasks</span>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar @(prj.ProgressPercentage == 100 ? "bg-success" : "bg-primary")" role="progressbar" style="width: @prj.ProgressPercentage%;"></div>
+                                </div>
+                            </td>
+                            <td>
+                                @if (prj.Status == ProjectStatus.InProgress)
+                                {
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">In Progress</span>
+                                }
+                                else if (prj.Status == ProjectStatus.Completed)
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Completed</span>
+                                }
+                                else if (prj.Status == ProjectStatus.Planning)
+                                {
+                                    <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">Planning</span>
+                                }
+                                else if (prj.Status == ProjectStatus.OnHold)
+                                {
+                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">On Hold</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">Cancelled</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@prj.Id" class="btn btn-outline-secondary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    @if (User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Manager))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@prj.Id" class="btn btn-outline-primary" title="Edit Project">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    }
+                                    @if (User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.Admin))
+                                    {
+                                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteProjectModal-@prj.Id" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
+                                </div>
+
+                                <!-- Delete Modal -->
+                                @if (User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.Admin))
+                                {
+                                    <div class="modal fade text-start" id="deleteProjectModal-@prj.Id" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header border-0 pb-0">
+                                                    <h5 class="modal-title fw-bold text-danger">Delete Project</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body py-3">
+                                                    Are you sure you want to remove project <strong>@prj.Name</strong> (@prj.ProjectCode)?
+                                                </div>
+                                                <div class="modal-footer border-0 pt-0">
+                                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                                    <form asp-action="Delete" asp-route-id="@prj.Id" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-kanban fs-1 text-secondary d-block mb-2"></i>
+                            No enterprise projects found matching your criteria.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

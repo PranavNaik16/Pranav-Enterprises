@@ -1,0 +1,77 @@
+@model UserProfileDto
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">My Profile</h1>
+        <p class="page-subtitle">Manage your corporate credentials, personal details, and account security</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- User Profile Overview Card -->
+    <div class="col-lg-5">
+        <div class="card-modern p-4 text-center">
+            <div class="avatar mx-auto mb-3" style="width: 72px; height: 72px; font-size: 1.8rem;">
+                @(Model.FullName.Length > 0 ? Model.FullName[0].ToString().ToUpper() : "U")
+            </div>
+            <h4 class="fw-bold mb-1">@Model.FullName</h4>
+            <p class="text-muted small mb-2">@Model.JobTitle &bull; @Model.DepartmentName</p>
+            <div>
+                <span class="badge @(Model.Role == AppRoles.SuperAdmin ? "bg-danger" : Model.Role == AppRoles.Admin ? "bg-primary" : Model.Role == AppRoles.Manager ? "bg-info" : "bg-secondary")">
+                    @Model.Role
+                </span>
+            </div>
+
+            <div class="border-top mt-4 pt-3 text-start">
+                <div class="mb-2 d-flex justify-content-between">
+                    <span class="text-muted small">Work Email:</span>
+                    <span class="fw-semibold small">@Model.Email</span>
+                </div>
+                <div class="mb-2 d-flex justify-content-between">
+                    <span class="text-muted small">Member Since:</span>
+                    <span class="fw-semibold small">@Model.CreatedAt.ToString("MMM dd, yyyy")</span>
+                </div>
+                <div class="mb-2 d-flex justify-content-between">
+                    <span class="text-muted small">Last Sign In:</span>
+                    <span class="fw-semibold small">@(Model.LastLoginAt?.ToString("MMM dd, yyyy HH:mm") ?? "N/A")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Change Form Card -->
+    <div class="col-lg-7">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="card-title-modern"><i class="bi bi-shield-lock me-2 text-primary"></i> Change Password</h5>
+            </div>
+            <div class="p-4">
+                <form asp-action="ChangePassword" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Current Password</label>
+                        <input name="CurrentPassword" type="password" class="form-control" required placeholder="••••••••" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">New Password</label>
+                        <input name="NewPassword" type="password" class="form-control" required placeholder="Minimum 6 characters" />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small text-secondary">Confirm New Password</label>
+                        <input name="ConfirmNewPassword" type="password" class="form-control" required placeholder="••••••••" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary fw-semibold">
+                        <i class="bi bi-check2-circle me-1"></i> Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

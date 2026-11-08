@@ -1,0 +1,162 @@
+@model List<EmployeeDto>
+@{
+    ViewData["Title"] = "Workforce Directory";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Employees Management</h1>
+        <p class="page-subtitle">Workforce roster, departmental assignments, and organizational records</p>
+    </div>
+    @if (User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Manager))
+    {
+        <a asp-action="Create" class="btn btn-primary fw-semibold shadow-sm">
+            <i class="bi bi-person-plus-fill me-1"></i> Add Employee
+        </a>
+    }
+</div>
+
+<!-- Search & Filter Card -->
+<div class="card-modern p-3 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text bg-light text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" name="search" class="form-control" placeholder="Search by name, code, email, or position..." value="@ViewBag.Search" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <select name="departmentId" class="form-select" asp-items="ViewBag.Departments">
+                <option value="">-- All Departments --</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-outline-primary w-100 fw-semibold">
+                <i class="bi bi-funnel me-1"></i> Filter
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+        </div>
+    </form>
+</div>
+
+<!-- Employees Table -->
+<div class="card-modern">
+    <div class="table-responsive">
+        <table class="table-modern">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Code</th>
+                    <th>Department</th>
+                    <th>Position</th>
+                    <th>Salary</th>
+                    <th>Status</th>
+                    <th>Active Tasks</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var emp in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-2">@(emp.FullName.Length > 0 ? emp.FullName[0].ToString().ToUpper() : "E")</div>
+                                    <div>
+                                        <div class="fw-bold text-dark">@emp.FullName</div>
+                                        <div class="text-muted small">@emp.Email</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">@emp.EmployeeCode</span>
+                            </td>
+                            <td>
+                                <span class="fw-semibold text-secondary small">@emp.DepartmentName</span>
+                            </td>
+                            <td>
+                                <span class="text-dark small">@emp.Position</span>
+                            </td>
+                            <td>
+                                <span class="fw-semibold small">$@emp.Salary.ToString("N0")</span>
+                            </td>
+                            <td>
+                                @if (emp.Status == EmployeeStatus.Active)
+                                {
+                                    <span class="badge-pill badge-active">Active</span>
+                                }
+                                else if (emp.Status == EmployeeStatus.OnLeave)
+                                {
+                                    <span class="badge-pill badge-leave">On Leave</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-pill badge-term">Terminated</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-primary border">@emp.ActiveTasksCount tasks</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@emp.Id" class="btn btn-outline-secondary" title="View Profile">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    @if (User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Manager))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@emp.Id" class="btn btn-outline-primary" title="Edit Employee">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    }
+                                    @if (User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.Admin))
+                                    {
+                                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@emp.Id" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
+                                </div>
+
+                                <!-- Delete Confirmation Modal -->
+                                @if (User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.Admin))
+                                {
+                                    <div class="modal fade text-start" id="deleteModal-@emp.Id" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header border-0 pb-0">
+                                                    <h5 class="modal-title fw-bold text-danger">Confirm Deletion</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body py-3">
+                                                    Are you sure you want to remove employee <strong>@emp.FullName</strong> (@emp.EmployeeCode)?
+                                                    This will soft-delete their record from the active workforce directory.
+                                                </div>
+                                                <div class="modal-footer border-0 pt-0">
+                                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                                    <form asp-action="Delete" asp-route-id="@emp.Id" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-people fs-1 text-secondary d-block mb-2"></i>
+                            No employees found matching the filter criteria.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

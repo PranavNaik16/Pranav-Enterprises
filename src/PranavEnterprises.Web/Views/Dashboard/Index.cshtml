@@ -1,0 +1,372 @@
+@model DashboardSummaryDto
+@using System.Security.Claims
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Executive Dashboard";
+    var userRole = User.FindFirstValue(ClaimTypes.Role) ?? AppRoles.Employee;
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Executive Dashboard</h1>
+        <p class="page-subtitle">Real-time enterprise metrics, active operations, and audit tracking</p>
+    </div>
+    <div class="d-flex gap-2">
+        @if (User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Manager))
+        {
+            <a href="@Url.Action("Create", "Projects")" class="btn btn-outline-primary btn-sm fw-semibold">
+                <i class="bi bi-plus-circle me-1"></i> New Project
+            </a>
+            <a href="@Url.Action("Create", "Tasks")" class="btn btn-primary btn-sm fw-semibold shadow-sm">
+                <i class="bi bi-check2-square me-1"></i> Assign Task
+            </a>
+        }
+    </div>
+</div>
+
+<!-- 4 Primary KPI Summary Metric Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Total Workforce</div>
+                <div class="stat-value">@Model.TotalEmployees</div>
+                <div class="small text-muted mt-1">
+                    <span class="text-success fw-semibold"><i class="bi bi-arrow-up-short"></i> Across @Model.DepartmentCount</span> departments
+                </div>
+            </div>
+            <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                <i class="bi bi-people-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Active Projects</div>
+                <div class="stat-value">@Model.ActiveProjects</div>
+                <div class="small text-muted mt-1">
+                    <span class="text-primary fw-semibold">@Model.TotalProjects</span> Total projects
+                </div>
+            </div>
+            <div class="stat-icon bg-info bg-opacity-10 text-info">
+                <i class="bi bi-kanban-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Completed Tasks</div>
+                <div class="stat-value">@Model.CompletedTasks</div>
+                <div class="small text-muted mt-1">
+                    <span class="text-warning fw-semibold">@Model.PendingTasks</span> In progress / pending
+                </div>
+            </div>
+            <div class="stat-icon bg-success bg-opacity-10 text-success">
+                <i class="bi bi-check2-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Total Managed Budget</div>
+                <div class="stat-value">$@Model.TotalBudget.ToString("N0")</div>
+                <div class="small text-muted mt-1">
+                    <span class="text-secondary fw-semibold">Enterprise Portfolio</span>
+                </div>
+            </div>
+            <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Chart.js Section -->
+<div class="row g-4 mb-4">
+    <!-- Monthly Velocity Chart -->
+    <div class="col-lg-8">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="card-title-modern"><i class="bi bi-graph-up me-2 text-primary"></i> Productivity Velocity & Task Delivery Trend</h5>
+                <span class="badge bg-light text-dark border">Monthly Aggregation</span>
+            </div>
+            <div class="p-3">
+                <div style="height: 280px; position: relative;">
+                    <canvas id="monthlyTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Status Distribution Doughnut -->
+    <div class="col-lg-4">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="card-title-modern"><i class="bi bi-pie-chart me-2 text-info"></i> Projects by Status</h5>
+            </div>
+            <div class="p-3">
+                <div style="height: 280px; position: relative;">
+                    <canvas id="projectStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Department Headcount Distribution -->
+    <div class="col-lg-6">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="card-title-modern"><i class="bi bi-bar-chart-steps me-2 text-primary"></i> Department Headcount Allocation</h5>
+            </div>
+            <div class="p-3">
+                <div style="height: 250px; position: relative;">
+                    <canvas id="departmentChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Status Distribution -->
+    <div class="col-lg-6">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="card-title-modern"><i class="bi bi-check-all me-2 text-success"></i> Tasks Status Distribution</h5>
+            </div>
+            <div class="p-3">
+                <div style="height: 250px; position: relative;">
+                    <canvas id="taskStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Operational Section: Recent Activities & Upcoming Deadlines -->
+<div class="row g-4">
+    <!-- Recent System Audit & Activities -->
+    <div class="col-lg-7">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="card-title-modern"><i class="bi bi-activity me-2 text-primary"></i> Real-time Audit Trail & Activity Log</h5>
+                @if (User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.Admin))
+                {
+                    <a href="@Url.Action("Index", "ActivityLogs")" class="small fw-semibold text-primary text-decoration-none">View All</a>
+                }
+            </div>
+            <div class="table-responsive">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Details</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.RecentActivities.Any())
+                        {
+                            @foreach (var act in Model.RecentActivities)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold text-dark">@act.UserName</div>
+                                        <span class="badge @(act.UserRole == AppRoles.SuperAdmin ? "bg-danger" : act.UserRole == AppRoles.Admin ? "bg-primary" : act.UserRole == AppRoles.Manager ? "bg-info" : "bg-secondary")" style="font-size: 0.65rem;">
+                                            @act.UserRole
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge @(act.Action == "Create" ? "bg-success" : act.Action == "Update" ? "bg-warning text-dark" : act.Action == "Delete" ? "bg-danger" : "bg-info text-dark")">
+                                            @act.Action
+                                        </span>
+                                    </td>
+                                    <td class="text-truncate" style="max-width: 240px;" title="@act.Details">
+                                        <span class="text-secondary small">@act.Details</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted small">@act.TimeAgo</span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted small">No recent activity logs recorded.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Task Deadlines -->
+    <div class="col-lg-5">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="card-title-modern"><i class="bi bi-calendar-event me-2 text-danger"></i> Urgent Task Deadlines</h5>
+                <a href="@Url.Action("Index", "Tasks")" class="small fw-semibold text-primary text-decoration-none">View All</a>
+            </div>
+            <div class="p-3">
+                @if (Model.UpcomingDeadlines.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var task in Model.UpcomingDeadlines)
+                        {
+                            <div class="list-group-item px-0 py-2 border-0 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="badge bg-light text-primary border fw-bold small">@task.TaskCode</span>
+                                    <span class="badge @(task.Priority == "Critical" ? "bg-danger" : task.Priority == "High" ? "bg-warning text-dark" : "bg-secondary")" style="font-size: 0.7rem;">
+                                        @task.Priority
+                                    </span>
+                                </div>
+                                <div class="fw-semibold text-dark small text-truncate">@task.Title</div>
+                                <div class="d-flex justify-content-between align-items-center mt-1 text-muted" style="font-size: 0.75rem;">
+                                    <span><i class="bi bi-folder2-open me-1"></i>@task.ProjectName</span>
+                                    <span class="text-danger fw-semibold"><i class="bi bi-clock me-1"></i>Due @task.DueDate.ToString("MMM dd")</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4 text-muted small">
+                        <i class="bi bi-check2-all fs-2 text-success d-block mb-1"></i>
+                        No overdue or urgent pending tasks!
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Monthly Productivity Velocity Chart
+            const monthlyData = @Html.Raw(JsonSerializer.Serialize(Model.MonthlyTaskTrends));
+            const ctxMonthly = document.getElementById('monthlyTrendChart').getContext('2d');
+            new Chart(ctxMonthly, {
+                type: 'line',
+                data: {
+                    labels: monthlyData.map(d => d.Month),
+                    datasets: [
+                        {
+                            label: 'Created Tasks',
+                            data: monthlyData.map(d => d.CreatedCount),
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Completed Tasks',
+                            data: monthlyData.map(d => d.CompletedCount),
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 2. Project Status Doughnut Chart
+            const projectData = @Html.Raw(JsonSerializer.Serialize(Model.ProjectStatusDistribution));
+            const ctxProject = document.getElementById('projectStatusChart').getContext('2d');
+            new Chart(ctxProject, {
+                type: 'doughnut',
+                data: {
+                    labels: projectData.map(p => p.Label),
+                    datasets: [{
+                        data: projectData.map(p => p.Value),
+                        backgroundColor: projectData.map(p => p.Color),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    cutout: '65%'
+                }
+            });
+
+            // 3. Department Headcount Bar Chart
+            const deptData = @Html.Raw(JsonSerializer.Serialize(Model.DepartmentHeadcount));
+            const ctxDept = document.getElementById('departmentChart').getContext('2d');
+            new Chart(ctxDept, {
+                type: 'bar',
+                data: {
+                    labels: deptData.map(d => d.Label),
+                    datasets: [{
+                        label: 'Employees',
+                        data: deptData.map(d => d.Value),
+                        backgroundColor: deptData.map(d => d.Color),
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { stepSize: 1 } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 4. Task Status Breakdown Chart
+            const taskData = @Html.Raw(JsonSerializer.Serialize(Model.TaskStatusDistribution));
+            const ctxTask = document.getElementById('taskStatusChart').getContext('2d');
+            new Chart(ctxTask, {
+                type: 'doughnut',
+                data: {
+                    labels: taskData.map(t => t.Label),
+                    datasets: [{
+                        data: taskData.map(t => t.Value),
+                        backgroundColor: taskData.map(t => t.Color),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    cutout: '60%'
+                }
+            });
+        });
+    </script>
+}

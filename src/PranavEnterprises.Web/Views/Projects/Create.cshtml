@@ -1,0 +1,101 @@
+@model CreateProjectDto
+@{
+    ViewData["Title"] = "New Strategic Project";
+}
+
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-2">
+            <i class="bi bi-arrow-left me-1"></i> Back to Portfolio
+        </a>
+        <h1 class="page-title">Launch New Project</h1>
+        <p class="page-subtitle">Define strategic deliverables, milestone dates, budget, and project management oversight</p>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-modern p-4">
+            <form asp-action="Create" method="post" novalidate>
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small" role="alert"></div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label asp-for="ProjectCode" class="form-label fw-semibold small text-secondary">Project Code</label>
+                        <input asp-for="ProjectCode" class="form-control" />
+                        <span asp-validation-for="ProjectCode" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="ClientName" class="form-label fw-semibold small text-secondary">Client / Sponsor Organization</label>
+                        <input asp-for="ClientName" class="form-control" placeholder="e.g. Apex Global Corp" />
+                        <span asp-validation-for="ClientName" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label fw-semibold small text-secondary">Project Title</label>
+                    <input asp-for="Name" class="form-control" placeholder="Enter clear, descriptive project name" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label fw-semibold small text-secondary">Executive Description & Objectives</label>
+                    <textarea asp-for="Description" class="form-control" rows="3" placeholder="Provide scope details, key deliverables, and target outcome..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label asp-for="Budget" class="form-label fw-semibold small text-secondary">Budget Allocation ($)</label>
+                        <input asp-for="Budget" type="number" class="form-control" placeholder="150000" />
+                        <span asp-validation-for="Budget" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="ManagerId" class="form-label fw-semibold small text-secondary">Project Manager</label>
+                        <select asp-for="ManagerId" class="form-select" asp-items="ViewBag.Managers">
+                            <option value="">-- Select Project Manager --</option>
+                        </select>
+                        <span asp-validation-for="ManagerId" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label asp-for="StartDate" class="form-label fw-semibold small text-secondary">Commencement Date</label>
+                        <input asp-for="StartDate" type="date" class="form-control" />
+                        <span asp-validation-for="StartDate" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="EndDate" class="form-label fw-semibold small text-secondary">Target Completion Date</label>
+                        <input asp-for="EndDate" type="date" class="form-control" />
+                        <span asp-validation-for="EndDate" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <label asp-for="Priority" class="form-label fw-semibold small text-secondary">Priority Level</label>
+                        <select asp-for="Priority" class="form-select" asp-items="Html.GetEnumSelectList<PriorityLevel>()"></select>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="Status" class="form-label fw-semibold small text-secondary">Initial Lifecycle Status</label>
+                        <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<ProjectStatus>()"></select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light">Cancel</a>
+                    <button type="submit" class="btn btn-primary fw-semibold">
+                        <i class="bi bi-check2-circle me-1"></i> Create Project
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
